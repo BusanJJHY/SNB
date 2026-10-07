@@ -14,3 +14,10 @@ python3 -m http.server 8000 --bind 0.0.0.0
 ## GitHub Pages
 
 저장소 Settings → Pages → Build and deployment → Source에서 **GitHub Actions**를 선택합니다. `main`에 푸시하거나 Actions에서 Publish jump game을 실행하면 배포됩니다.
+
+## 추가 게임
+
+- `/racing/`: 좌우 이동 레이싱게임, 코인 상점과 폭탄 아이템
+- `/rhythm/`: 4레인 리듬게임. D/F/J/K 또는 터치 패드로 플레이합니다.
+
+리듬게임은 Web Audio로 자체 제작한 48초 곡을 연주합니다. 외부 음원이나 샘플, 별도 설치는 필요하지 않습니다. 음악은 시작 버튼을 누른 뒤 재생됩니다. 음악의 이용 조건은 `rhythm/README.md`를 확인하세요.
