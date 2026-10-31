@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4efdf">
+<title>올림포스 탐험대 · 그리스 로마 신화 퀴즈</title>
+<link rel="stylesheet" href="style.css">
+<script src="questions.js" defer></script>
+<script src="game.js" defer></script>
+</head>
+<body>
+<main>
+<header><div><p class="eyebrow">THE OLYMPUS EXPEDITION</p><h1>🏛️ 올림포스 탐험대</h1><p class="subtitle">그리스·로마 신화 상식 퀴즈 · 초등 중·고학년 도전</p></div><button id="sound" aria-label="효과음 끄기" aria-pressed="false">🔊</button></header>
+<section class="stats" aria-label="탐험 기록"><div><span>지식 레벨</span><strong id="level">Lv.1</strong><small id="xp"></small></div><div><span>정복한 신전</span><strong id="temples">0 / 6</strong><small>6개 이상 정답이면 통과</small></div><div><span>수집한 도감</span><strong id="collection">0 / 24</strong><small id="titleRank">신화 입문자</small></div></section>
+<nav class="tabs" aria-label="게임 메뉴"><button id="homeTab" aria-pressed="true">🗺️ 탐험</button><button id="bookTab" aria-pressed="false">📜 신화 도감</button><button id="wrongTab" aria-pressed="false">📌 오답 노트 <span id="wrongCount">0</span></button></nav>
+<section id="homeView" aria-labelledby="homeTab">
+ <div class="hero"><div><p class="eyebrow">이름만 안다고 끝이 아니야!</p><h2>신화 속 단서를 찾아<br>여섯 신전을 열어라!</h2><p>영웅의 작전, 괴물의 비밀, 로마에서 바뀐 이름까지.<br>한 신전 10문제 · 보기 네 개 · 시간 제한 없음</p></div><svg viewBox="0 0 180 140" aria-hidden="true"><circle cx="100" cy="63" r="52" fill="#e6d7a3"/><path d="M22 49 L97 12 L172 49Z" fill="#637f73"/><path d="M30 48H163V59H30Z" fill="#d5c89f"/><path d="M38 62H58V118H38Z M75 62H95V118H75Z M112 62H132V118H112Z M145 62H157V118H145Z" fill="#e7debc"/><path d="M43 64V117 M50 64V117 M80 64V117 M87 64V117 M117 64V117 M124 64V117 M150 64V117" stroke="#b9b18a" stroke-width="3"/><path d="M24 119H169V126H24Z M17 127H176V134H17Z" fill="#8a9a7c"/><path d="M96 29L91 38H98L93 46L105 34H99L103 29Z" fill="#f4de8b"/><path d="M8 114Q2 92 10 82 M8 101L1 95 M8 95L15 88 M170 112Q179 93 171 79 M175 101L182 93 M175 92L168 86" fill="none" stroke="#7c9067" stroke-width="4"/></svg></div>
+ <div id="resumeBox" class="resume" hidden><div><strong>풀이 중인 탐험이 있어요</strong><p id="resumeText"></p></div><button id="resume" class="primary">이어 풀기 →</button><button id="endRun" class="text-button">이번 묶음 마치기</button></div>
+ <div class="section-heading"><h2>나의 신전 탐험</h2><span>각 신전 12문제 중 10문제 출제</span></div><div id="chapters" class="chapter-grid"></div>
+ <div class="challenge"><div><h3>🏆 신화왕 종합 도전</h3><p id="mixedDescription">여섯 신전을 통과하면 열려요. 모든 주제에서 12문제!</p></div><button id="mixed" disabled>신전부터 탐험해요</button></div>
+ <p class="note">💡 신전마다 50:50 힌트 두 번! 틀려도 끝까지 도전하고 해설로 배워요.<br>일부 이야기는 판본마다 달라요. 문제에 나온 조건과 널리 전해지는 이야기를 기준으로 골라요.</p>
+</section>
+<section id="quizView" hidden aria-labelledby="quizTitle"><div class="quiz-top"><div><p class="eyebrow" id="quizCategory"></p><h2 id="quizTitle"></h2></div><button id="rest">잠깐 쉬기</button></div><div class="run-stats"><span id="questionProgress"></span><strong id="combo"></strong><span id="points"></span></div><div class="progress"><div id="progressBar"></div></div><article class="question-card"><p id="questionNumber" class="eyebrow"></p><h3 id="question"></h3><div id="choices" class="choices"></div><button id="hint" class="hint-button"></button><div id="explanation" class="explanation" role="status" hidden><strong id="answerStatus"></strong><p id="answerText"></p><p id="answerExplanation"></p></div></article><button id="next" class="primary next" hidden>다음 문제 →</button><p class="note">숫자 키 1~4로 답할 수도 있어요. 정답을 고른 뒤 해설을 읽어 보세요.</p></section>
+<section id="bookView" hidden aria-labelledby="bookTab"><div class="section-heading"><div><h2>📜 나의 신화 도감</h2><p class="note">관련 문제를 맞히면 카드가 열려요. 그리스·로마 이름도 비교해 봐요.</p></div></div><div id="bookProgress" class="book-progress"></div><div id="bookCards" class="book-grid"></div></section>
+<section id="wrongView" hidden aria-labelledby="wrongTab"><div class="section-heading"><h2>📌 다시 도전할 이야기</h2></div><p class="note">해설을 읽고 다시 맞히면 오답 노트에서 사라져요. 신전 통과 기록은 그대로 유지돼요.</p><button id="review" class="primary">오답 다시 풀기</button><p id="reviewDescription" class="note"></p><div id="wrongList" class="wrong-list"></div></section>
+<section id="resultView" hidden aria-labelledby="resultTitle"><div class="result-panel"><div id="resultIcon" class="result-icon"></div><p class="eyebrow">EXPLORATION REPORT</p><h2 id="resultTitle"></h2><p id="resultMessage"></p><div id="resultStars" class="result-stars"></div><div class="result-stats"><div><strong id="resultCorrect"></strong><span>맞힌 문제</span></div><div><strong id="resultPoints"></strong><span>획득 점수</span></div><div><strong id="resultCombo"></strong><span>최고 연속 정답</span></div></div><div class="result-actions"><button id="resultPrimary" class="primary"></button><button id="resultHome">탐험 지도로 돌아가기</button></div><p id="resultTip" class="note"></p></div></section>
+<p id="notice" role="status" class="notice">용기만 챙기고 첫 신전으로 떠나요!</p>
+<footer>탐험 기록·도감·오답·풀이 중인 문제는 이 브라우저에 자동 저장돼요.<br><a href="../">게임 목록</a> · <a href="../maze/">괴물 미로 탈출</a> · <a href="../canada/">캐나다 학교 모험</a></footer>
+</main>
+</body>
+</html>
