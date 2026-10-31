@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101c2a">
+<title>미로 탈출! · 괴물을 피해 달려!</title>
+<style>
+:root{color-scheme:dark;--bg:#101c2a;--panel:#1b2c3e;--ink:#f4f0d9;--muted:#a7b9c8;--mint:#83debc;--gold:#f4ca70;--coral:#f39892}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#253d4e,var(--bg) 70%);color:var(--ink);font-family:system-ui,sans-serif;min-height:100svh}main{width:min(850px,100%);margin:0 auto;padding:15px 14px 18px}button,select{font:inherit}button{border:2px solid #567087;border-radius:11px;background:#2c455b;color:var(--ink);min-height:44px;padding:9px 12px;font-weight:850;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 0 #0c1621}button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #0c1621}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible,canvas:focus-visible{outline:3px solid var(--gold);outline-offset:3px}header{display:flex;justify-content:space-between;gap:10px;align-items:center}h1{font-size:clamp(24px,5vw,35px);letter-spacing:-1px;margin:0}header p{font-size:12px;margin:4px 0 10px;color:var(--muted)}#soundButton{font-size:20px;padding:6px 9px;align-self:flex-start;min-width:44px}.hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}.stat{border:1px solid #3c5368;border-radius:12px;background:#1b2c3e;padding:8px 5px;text-align:center;font-size:11px;color:var(--muted)}.stat strong{display:block;font-size:19px;color:var(--ink);margin-top:2px}#hearts{color:var(--coral);letter-spacing:3px}#starCount{color:var(--gold)}.play-layout{display:grid;grid-template-columns:minmax(0,1fr) 192px;gap:15px;align-items:start}.board-column{min-width:0;display:flex;align-items:center;flex-direction:column}.board{position:relative;width:min(100%,calc(100svh - 205px),560px);aspect-ratio:1;border:4px solid #476379;border-radius:14px;overflow:hidden;box-shadow:0 10px 35px #0005;background:#142536}#maze{display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none}.board.shake{animation:shake .24s linear}@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}.legend{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.6;text-align:center}.legend .exit{color:var(--mint)}.legend .runner{color:var(--gold)}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;background:#0e1b29e8;backdrop-filter:blur(2px);overflow:auto}.overlay-content{width:100%;max-width:330px;text-align:center;margin:auto}.overlay .icon{font-size:38px;line-height:1;margin-bottom:9px}.overlay h2{font-size:24px;letter-spacing:-.7px;line-height:1.35;margin:0 0 9px}.overlay p{font-size:13px;line-height:1.8;color:#c7d7df;margin:8px 0}.overlay strong{color:var(--mint)}.overlay .primary{display:block;width:100%;background:var(--mint);border-color:#9ce8cc;color:#143c35;font-size:17px;min-height:49px;margin-top:13px;box-shadow:0 4px 0 #395d55}.overlay .secondary{display:block;width:100%;margin-top:10px;font-size:12px;min-height:38px;background:transparent;box-shadow:none}.overlay .result{background:#243e50;border:1px solid #597184;padding:9px;border-radius:10px;color:var(--gold);font-weight:850}.side{display:flex;flex-direction:column;gap:12px}.stage-picker{background:var(--panel);border:1px solid #3d5366;border-radius:13px;padding:12px}.stage-picker label{font-size:12px;color:var(--muted);display:block;margin-bottom:8px}.stage-picker select{width:100%;background:#263f53;border:1px solid #5f7b90;color:var(--ink);padding:9px 6px;border-radius:8px;min-height:43px;font-weight:800}.stage-picker small{font-size:11px;color:var(--muted);display:block;line-height:1.6;margin-top:8px}.dpad{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,48px);gap:6px}.dpad button{padding:4px;font-size:24px;min-height:44px;touch-action:none;user-select:none;-webkit-user-select:none;background:#34536b}.dpad [data-direction=up]{grid-column:2}.dpad [data-direction=left]{grid-column:1;grid-row:2}.dpad [data-direction=down]{grid-column:2;grid-row:2}.dpad [data-direction=right]{grid-column:3;grid-row:2}.actions{display:flex;flex-direction:column;gap:8px}.actions button{font-size:13px}.mini-help{font-size:12px;line-height:1.8;color:var(--muted);margin:0}.run-info{display:flex;justify-content:space-between;gap:6px;margin:9px 0 0;width:100%;max-width:560px;font-size:11px;color:var(--muted)}#message{color:var(--mint);min-height:18px;text-align:center;font-size:12px;line-height:1.5;margin:12px 0 0}footer{font-size:11px;line-height:1.8;text-align:center;color:#91a7b9;margin:12px 0 0}footer a{color:#b9cbd7}#srStatus{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}[hidden]{display:none!important}@media(max-width:640px){main{padding:10px 10px 12px}h1{font-size:25px}header p{font-size:11px;margin-bottom:8px}.hud{gap:6px;margin-bottom:8px}.stat{padding:5px 3px;font-size:10px}.stat strong{font-size:17px}.play-layout{display:flex;flex-direction:column;gap:0}.board-column{width:100%}.board{width:min(100%,calc(100svh - 305px),440px);min-width:190px;border-width:3px;border-radius:10px}.legend{font-size:10px;margin-top:4px}.run-info{font-size:10px;margin-top:4px;max-width:440px;width:min(100%,calc(100svh - 305px))}.side{width:100%;display:grid;grid-template-columns:150px 1fr;gap:8px 13px;align-items:center;margin-top:9px}.dpad{grid-column:1;grid-row:1;grid-template-rows:repeat(2,43px);gap:5px}.dpad button{font-size:23px}.actions{grid-column:2;grid-row:1;gap:6px;flex-direction:row;flex-wrap:wrap}.actions button{flex:1;padding:7px 5px;min-height:43px;white-space:nowrap;font-size:12px}.stage-picker{grid-column:1/-1;grid-row:2;display:flex;align-items:center;gap:8px;border:0;background:none;border-radius:0;padding:0}.stage-picker label{font-size:11px;margin:0;white-space:nowrap}.stage-picker select{font-size:11px;width:auto;max-width:150px;padding:3px 6px;min-height:30px}.stage-picker small{margin:0 0 0 auto;font-size:10px}.mini-help{display:none}#message{font-size:11px;margin-top:7px;min-height:16px}footer{font-size:10px;margin-top:6px}.overlay{padding:9px}.overlay .icon{font-size:30px;margin-bottom:7px}.overlay h2{font-size:21px;margin-bottom:6px}.overlay p{font-size:12px;line-height:1.65;margin:6px 0}.overlay .primary{min-height:44px;margin-top:9px;font-size:15px}.overlay .secondary{margin-top:6px;min-height:34px}.overlay .result{padding:6px}}
+@media(max-height:480px) and (min-aspect-ratio:4/3){main{padding:8px 12px;max-width:800px}header p{display:none}h1{font-size:23px}#soundButton{min-height:34px;height:34px;font-size:17px}.hud{margin:6px 0;gap:6px}.stat{padding:2px 3px;font-size:9px}.stat strong{display:inline;font-size:14px;margin-left:6px}.play-layout{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:12px}.board{width:min(100%,calc(100svh - 140px));min-width:170px}.legend{font-size:9px;margin-top:3px}.run-info{max-width:calc(100svh - 140px);font-size:9px}.side{display:flex;gap:7px;margin:0}.dpad{width:155px;align-self:center;grid-template-rows:repeat(2,39px)}.actions{flex-direction:row;width:100%}.actions button{padding:4px;min-height:36px;font-size:11px}.stage-picker{display:flex;flex-wrap:wrap;width:100%;gap:5px}.stage-picker select{min-height:30px;flex:1}.stage-picker small{margin:0;width:100%;font-size:10px}.mini-help{display:none}#message{margin-top:4px;font-size:10px}footer{margin-top:4px;font-size:9px}.overlay .icon{display:none}.overlay h2{font-size:19px}.overlay p{font-size:11px;line-height:1.5}.overlay .primary{min-height:38px;font-size:14px}.overlay .secondary{min-height:30px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.board.shake{animation:none}.overlay{backdrop-filter:none}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>👾 미로 탈출!</h1><p>괴물에게 잡히기 전에, 초록 출구로 달려!</p></div><button id="soundButton" aria-label="소리 끄기" aria-pressed="false">🔊</button></header>
+<section class="hud" aria-label="게임 상태"><div class="stat">스테이지<strong id="stageLabel">1 / 30</strong></div><div class="stat">남은 하트<strong id="hearts" aria-label="하트 3개">♥ ♥ ♥</strong></div><div class="stat">이번 별<strong id="starCount">★ 0 / 3</strong></div></section>
+<div class="play-layout"><div class="board-column"><div id="board" class="board"><canvas id="maze" width="264" height="264" tabindex="0" aria-label="괴물을 피해 초록 출구로 이동하는 미로. 방향키 또는 화면의 큰 화살표를 사용하세요."></canvas><div id="overlay" class="overlay"><div id="overlayContent" class="overlay-content"></div></div></div><div class="run-info"><span id="difficulty"></span><span id="timer">0초</span></div><p class="legend"><span class="runner">● 노란 모자 = 나</span> · <span class="exit">초록 문 = 출구</span> · ★ 별은 보너스!</p></div>
+<aside class="side"><div class="dpad" aria-label="이동"><button data-direction="up" aria-label="위로 이동">↑</button><button data-direction="left" aria-label="왼쪽으로 이동">←</button><button data-direction="down" aria-label="아래로 이동">↓</button><button data-direction="right" aria-label="오른쪽으로 이동">→</button></div><div class="actions"><button id="pauseButton" disabled>Ⅱ 잠깐 멈춤</button><button id="hintButton" disabled>💡 길 도움 2</button></div><div class="stage-picker"><label for="stageSelect">열린 단계</label><select id="stageSelect" aria-label="열린 스테이지 선택"></select><small id="records">모은 별 0 / 90</small></div><p class="mini-help">방향키 / WASD로 이동해요.<br>화살표를 꾹 누르면 쭉 달려요.<br>스페이스바는 잠깐 멈춤!<br><br>별을 모두 모으지 않아도<br>초록 출구에 닿으면 탈출 성공!</p></aside></div>
+<p id="message" role="status">방향만 골라요. 달리기는 자동!</p><p id="srStatus" role="status" aria-live="polite"></p>
+<footer>열린 스테이지와 최고 기록 자동 저장 · 시간 제한 없어요<br><a href="../">게임 목록</a> · <a href="../canada/">캐나다 학교 모험</a></footer>
+</main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),MAX_STAGE=30,KEY='maze-escape-v1',TILE=24,PLAYER_INTERVAL=125;
+const canvas=$('#maze'),ctx=canvas.getContext('2d'),DIRS={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+const initialSave=()=>({unlocked:1,selected:1,records:{},muted:false});
+let saved=initialSave();
+try{
+ const raw=JSON.parse(localStorage.getItem(KEY));
+ if(raw&&Number.isInteger(raw.unlocked)&&raw.unlocked>=1&&raw.unlocked<=MAX_STAGE){
+  saved.unlocked=raw.unlocked;saved.selected=Number.isInteger(raw.selected)&&raw.selected>=1&&raw.selected<=raw.unlocked?raw.selected:raw.unlocked;saved.muted=raw.muted===true;
+  for(let i=1;i<=MAX_STAGE;i++){const r=raw.records?.[i];if(r&&Number.isInteger(r.stars)&&r.stars>=0&&r.stars<=3&&Number.isSafeInteger(r.score)&&r.score>=0&&i<=saved.unlocked)saved.records[i]={stars:r.stars,score:r.score}}
+ }
+}catch{}
+let stage=saved.selected,config,grid=[],start={x:1,y:1},exit,player,monsters=[],stars=[],mode='ready',hearts=3,collected=0,gameTime=0,lastFrame=0,lastPlayerStep=-PLAYER_INTERVAL,hintUses=2,hintUntil=0,hintPath=[],invincibleUntil=0,held=new Set(),facing='down',touchStart=null,lastTimer=-1,audioCtx=null,lastDraw=0;
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch{}}
+function announce(message){$('#message').textContent=message;$('#srStatus').textContent=message}
+function settings(level){return {size:Math.min(21,11+2*Math.floor((level-1)/4)),count:level>=25?5:level>=18?4:level>=10?3:level>=5?2:1,monsterInterval:850-(level-1)*15,awareness:6+Math.floor(level/3)}}
+function shuffled(list){const result=[...list];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}return result}
+function same(a,b){return a.x===b.x&&a.y===b.y}
+function insideFloor(map,x,y){return y>=0&&y<map.length&&x>=0&&x<map[0].length&&map[y][x]===0}
+function neighbors(map,p){return Object.values(DIRS).map(d=>({x:p.x+d.x,y:p.y+d.y})).filter(n=>insideFloor(map,n.x,n.y))}
+function distances(map,from){const result=Array.from({length:map.length},()=>Array(map[0].length).fill(-1)),queue=[from];result[from.y][from.x]=0;for(let i=0;i<queue.length;i++)for(const n of neighbors(map,queue[i]))if(result[n.y][n.x]===-1){result[n.y][n.x]=result[queue[i].y][queue[i].x]+1;queue.push(n)}return {values:result,cells:queue}}
+function route(map,from,to){const d=distances(map,to).values;if(d[from.y]?.[from.x]<0)return [];const path=[{x:from.x,y:from.y}];let current=from;while(!same(current,to)){const next=neighbors(map,current).find(n=>d[n.y][n.x]===d[current.y][current.x]-1);if(!next)return [];path.push(next);current=next}return path}
+function generateMaze(size){
+ const map=Array.from({length:size},()=>Array(size).fill(1)),stack=[{x:1,y:1}];map[1][1]=0;
+ while(stack.length){const p=stack[stack.length-1],options=shuffled(Object.values(DIRS)).map(d=>({x:p.x+d.x*2,y:p.y+d.y*2})).filter(n=>n.x>0&&n.y>0&&n.x<size-1&&n.y<size-1&&map[n.y][n.x]===1);if(!options.length){stack.pop();continue}const n=options[0];map[(p.y+n.y)/2][(p.x+n.x)/2]=0;map[n.y][n.x]=0;stack.push(n)}
+ // Join dead ends into loops so players can circle around pursuing monsters.
+ for(const p of shuffled(distances(map,{x:1,y:1}).cells)){if(p.x%2!==1||p.y%2!==1||neighbors(map,p).length!==1)continue;const walls=shuffled(Object.values(DIRS)).map(d=>({wall:{x:p.x+d.x,y:p.y+d.y},other:{x:p.x+d.x*2,y:p.y+d.y*2}})).filter(n=>n.other.x>0&&n.other.y>0&&n.other.x<size-1&&n.other.y<size-1&&map[n.wall.y][n.wall.x]===1&&map[n.other.y][n.other.x]===0);if(walls.length)map[walls[0].wall.y][walls[0].wall.x]=0}
+ return map;
+}
+function createLevel(level){
+ const cfg=settings(level),map=generateMaze(cfg.size),d=distances(map,start),farthest=d.cells.reduce((a,b)=>d.values[a.y][a.x]>d.values[b.y][b.x]?a:b),end={...farthest},fromExit=distances(map,end).values;
+ let spawnCells=shuffled(d.cells.filter(p=>d.values[p.y][p.x]>=Math.max(6,Math.floor(d.values[end.y][end.x]*.42))&&fromExit[p.y][p.x]>=3));
+ if(spawnCells.length<cfg.count)spawnCells=shuffled(d.cells.filter(p=>d.values[p.y][p.x]>=5&&!same(p,end)));
+ const enemies=spawnCells.slice(0,cfg.count).map((p,i)=>({x:p.x,y:p.y,fromX:p.x,fromY:p.y,movedAt:0,spawn:{...p},nextMove:1400+i*140,previous:null,index:i}));
+ const gems=shuffled(d.cells.filter(p=>d.values[p.y][p.x]>=3&&!same(p,end)&&!enemies.some(m=>same(m,p)))).slice(0,3).map(p=>({...p,taken:false}));
+ return {cfg,map,end,enemies,gems};
+}
+function updateSavedUI(){
+ const selection=$('#stageSelect');selection.replaceChildren();for(let n=1;n<=saved.unlocked;n++){const o=document.createElement('option');o.value=n;o.textContent=`${n} 단계${saved.records[n]?' · '+('★'.repeat(saved.records[n].stars)||'탈출'):''}`;selection.append(o)}selection.value=stage;
+ const total=Object.values(saved.records).reduce((sum,r)=>sum+r.stars,0);$('#records').textContent=`모은 별 ${total} / 90`;
+ $('#soundButton').textContent=saved.muted?'🔇':'🔊';$('#soundButton').setAttribute('aria-label',saved.muted?'소리 켜기':'소리 끄기');$('#soundButton').setAttribute('aria-pressed',String(saved.muted));
+}
+function updateHUD(){
+ $('#stageLabel').textContent=`${stage} / ${MAX_STAGE}`;$('#hearts').textContent='♥ '.repeat(hearts)+'♡ '.repeat(3-hearts);$('#hearts').setAttribute('aria-label',`하트 ${hearts}개`);$('#starCount').textContent=`★ ${collected} / 3`;
+ $('#difficulty').textContent=`${config.size}×${config.size} 미로 · 괴물 ${config.count}마리`;$('#pauseButton').disabled=!['running','paused'].includes(mode);$('#pauseButton').textContent=mode==='paused'?'▶ 계속하기':'Ⅱ 잠깐 멈춤';$('#hintButton').disabled=mode!=='running'||hintUses===0;$('#hintButton').textContent=`💡 길 도움 ${hintUses}`;
+}
+function overlay(icon,title,text,buttonLabel,onClick,secondary){
+ held.clear();touchStart=null;$('#overlay').hidden=false;$('#overlayContent').innerHTML=`<div class="icon">${icon}</div><h2>${title}</h2>${text}<button id="overlayAction" class="primary">${buttonLabel}</button>${secondary?'<button id="overlaySecondary" class="secondary">'+secondary.label+'</button>':''}`;
+ $('#overlayAction').addEventListener('click',onClick);if(secondary)$('#overlaySecondary').addEventListener('click',secondary.action);
+}
+function loadLevel(level){
+ stage=Math.max(1,Math.min(saved.unlocked,level));saved.selected=stage;persist();const built=createLevel(stage);config=built.cfg;grid=built.map;exit=built.end;monsters=built.enemies;stars=built.gems;canvas.width=config.size*TILE;canvas.height=config.size*TILE;
+ player={...start,fromX:start.x,fromY:start.y,movedAt:0};hearts=3;collected=0;gameTime=0;lastPlayerStep=-PLAYER_INTERVAL;hintUses=2;hintUntil=0;hintPath=[];invincibleUntil=0;lastTimer=-1;facing='down';mode='ready';held.clear();$('#timer').textContent='0초';updateSavedUI();updateHUD();
+ const record=saved.records[stage];overlay('👾',`스테이지 ${stage}`,`<p>노란 모자를 쓴 나를 움직여<br><strong>초록 출구</strong>까지 도망가요!</p><p>방향키 또는 큰 화살표를 꾹!<br>별은 보너스 · 하트는 3개</p>${record?`<p>최고 ${record.score}점 · 별 ${record.stars}/3</p>`:''}`,'▶ 도망 시작!',startRunning);announce(stage===1?'괴물은 나보다 느려요. 길을 돌아서 피할 수 있어요!':`${stage}단계! 더 넓어진 미로와 빨라진 괴물을 조심해요.`);
+}
+function startRunning(){if(mode!=='ready'&&mode!=='paused')return;mode='running';held.clear();$('#overlay').hidden=true;updateHUD();canvas.focus({preventScroll:true});tone('start');announce('초록 출구로 달려요! 별은 안 모아도 탈출할 수 있어요.')}
+function togglePause(auto=false){if(mode==='running'){mode='paused';held.clear();overlay('Ⅱ','잠깐 쉬어요',`<p>괴물도 같이 멈췄어요.<br>${auto?'준비되면 계속하기를 눌러요.':'준비되면 다시 도망가 볼까요?'}</p>`,'▶ 계속하기',startRunning);updateHUD();announce('게임이 멈췄어요. 천천히 쉬어도 괜찮아요.')}else if(mode==='paused')startRunning()}
+function useHint(){if(mode!=='running'||hintUses<=0)return;hintUses--;hintPath=route(grid,player,exit);hintUntil=gameTime+5500;updateHUD();announce('반짝이는 점을 따라가면 출구예요! 괴물은 피해 가요.');tone('star')}
+function movePlayer(direction){
+ if(mode!=='running'||!DIRS[direction])return false;const d=DIRS[direction],nx=player.x+d.x,ny=player.y+d.y;facing=direction;lastPlayerStep=gameTime;if(!insideFloor(grid,nx,ny))return false;
+ player.fromX=player.x;player.fromY=player.y;player.x=nx;player.y=ny;player.movedAt=gameTime;
+ const gem=stars.find(s=>!s.taken&&same(s,player));if(gem){gem.taken=true;collected++;updateHUD();announce(`별 ${collected}개! ${collected===3?'다 모았어요! 출구로 가요.':'멋져요! 출구도 찾아봐요.'}`);tone('star')}
+ checkCollision();if(mode==='running'&&same(player,exit))clearLevel();return true;
+}
+function respawnMonster(m){const d=distances(grid,player);const candidates=shuffled(d.cells.filter(p=>d.values[p.y][p.x]>=6&&!same(p,exit)&&!monsters.some(other=>other!==m&&same(other,p))));const p=candidates[0]||m.spawn;m.x=p.x;m.y=p.y;m.fromX=p.x;m.fromY=p.y;m.movedAt=gameTime;m.previous=null;m.nextMove=gameTime+1700}
+function checkCollision(){if(mode!=='running'||gameTime<invincibleUntil)return;const m=monsters.find(m=>same(m,player));if(!m)return;hearts--;tone('hit');if(hearts===0){loseLevel();return}invincibleUntil=gameTime+2000;respawnMonster(m);$('#board').classList.remove('shake');void $('#board').offsetWidth;$('#board').classList.add('shake');updateHUD();announce(`앗! 하트 ${hearts}개 남았어요. 2초 동안 반짝이는 무적! 계속 달려요.`)}
+function moveMonsters(){
+ if(mode!=='running')return;const toward=distances(grid,player).values;
+ for(const m of monsters){if(gameTime<m.nextMove)continue;m.nextMove=gameTime+config.monsterInterval+m.index*12;const options=neighbors(grid,m).filter(n=>!same(n,exit)&&!monsters.some(other=>other!==m&&same(other,n)));if(!options.length)continue;let chosen;
+  if(toward[m.y][m.x]<=config.awareness)chosen=shuffled(options).sort((a,b)=>toward[a.y][a.x]-toward[b.y][b.x])[0];else{const forward=options.filter(n=>!m.previous||!same(n,m.previous));chosen=shuffled(forward.length?forward:options)[0]}
+  m.previous={x:m.x,y:m.y};m.fromX=m.x;m.fromY=m.y;m.x=chosen.x;m.y=chosen.y;m.movedAt=gameTime;checkCollision();if(mode!=='running')break;
+ }
+}
+function clearLevel(){
+ if(mode!=='running')return;mode=stage===MAX_STAGE?'complete':'cleared';held.clear();const score=collected*25+hearts*20+Math.max(0,90-Math.floor(gameTime/1000)),old=saved.records[stage]||{stars:0,score:0};saved.records[stage]={stars:Math.max(old.stars,collected),score:Math.max(old.score,score)};saved.unlocked=Math.max(saved.unlocked,Math.min(MAX_STAGE,stage+1));saved.selected=Math.min(MAX_STAGE,stage+1);persist();updateSavedUI();updateHUD();tone('win');
+ const title=stage===MAX_STAGE?'미로 탈출 마스터!':'탈출 성공!';const text=`<p>${stage===MAX_STAGE?'30개 스테이지를 전부 통과했어요!<br>정말 멋진 도망 실력이에요.':'괴물을 따돌렸어요! 잘했어요!'}</p><p class="result">${'★'.repeat(collected)+'☆'.repeat(3-collected)}<br>${score}점 · ${Math.floor(gameTime/1000)}초</p>`;
+ overlay(stage===MAX_STAGE?'🏆':'🎉',title,text,stage===MAX_STAGE?'첫 단계 다시 즐기기':'다음 스테이지 →',()=>loadLevel(stage===MAX_STAGE?1:stage+1),{label:'같은 단계에서 별 더 모으기',action:()=>loadLevel(stage)});announce(stage===MAX_STAGE?'30스테이지 완주! 모든 열린 단계에서 별 모으기에 도전할 수 있어요.':`${stage}단계 탈출 성공! ${stage+1}단계가 열렸어요.`);
+}
+function loseLevel(){mode='lost';held.clear();updateHUD();overlay('💛','괜찮아, 다시 도전!',`<p>괴물이 먼저 도착했어요.<br>나는 괴물보다 빨라요!<br>길을 돌아서 피하거나 길 도움을 써 봐요.</p>`,'↻ 다시 도전하기',()=>loadLevel(stage));announce('같은 단계에 다시 도전할 수 있어요. 열린 단계와 기록은 그대로예요.')}
+function tone(kind){if(saved.muted)return;try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});const list=kind==='win'?[523,659,784,1047]:kind==='star'?[784,1047]:kind==='hit'?[196,165]:[392,523];list.forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain(),at=audioCtx.currentTime+i*.07;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.055,at+.01);g.gain.exponentialRampToValueAtTime(.0001,at+.11);o.connect(g);g.connect(audioCtx.destination);o.start(at);o.stop(at+.12)})}catch{}}
+function box(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function pixelStar(x,y,color){box(x-2,y-6,4,12,color);box(x-6,y-2,12,4,color);box(x-4,y-4,8,8,color);box(x-1,y-4,2,3,'#fff0b2')}
+function drawMonster(m){const t=Math.min(1,Math.max(0,(gameTime-m.movedAt)/150)),x=(m.fromX+(m.x-m.fromX)*t)*TILE+12,y=(m.fromY+(m.y-m.fromY)*t)*TILE+12,colors=['#e58e97','#ae98df','#8ec4bc','#e6ae6a','#86aee0'],color=colors[m.index%colors.length],bounce=Math.floor(gameTime/240+m.index)%2;box(x-8,y+7,16,3,'#0004');box(x-6,y-7,12,3,color);box(x-8,y-4,16,12,color);box(x-6,y-9,3,4,color);box(x+3,y-9,3,4,color);box(x-6,y-3,5,5,'#fff4dc');box(x+1,y-3,5,5,'#fff4dc');box(x-4+(player.x>m.x?1:-1),y-1,2,3,'#334458');box(x+3+(player.x>m.x?1:-1),y-1,2,3,'#334458');box(x-6,y+7+bounce,4,3,'#794f77');box(x+2,y+8-bounce,4,3,'#794f77');box(x-2,y+4,4,1,'#82546c')}
+function drawPlayer(){
+ const t=Math.min(1,Math.max(0,(gameTime-player.movedAt)/85)),x=(player.fromX+(player.x-player.fromX)*t)*TILE+12,y=(player.fromY+(player.y-player.fromY)*t)*TILE+12,blink=gameTime<invincibleUntil&&Math.floor(gameTime/110)%2;
+ if(blink)ctx.globalAlpha=.4;box(x-7,y+7,14,3,'#0005');if(gameTime<invincibleUntil){ctx.strokeStyle='#f5da8d';ctx.lineWidth=1;ctx.strokeRect(Math.round(x-10),Math.round(y-11),20,22)}
+ box(x-5,y-9,10,4,'#f2ca6c');box(x-7,y-5,14,3,'#f2ca6c');box(x-4,y-2,8,5,'#f5c99e');box(x-5,y+3,10,6,'#81c8d7');box(x-7,y+3,2,5,'#f5c99e');box(x+5,y+3,2,5,'#f5c99e');box(x-4,y+9,3,2,'#e8dbae');box(x+1,y+9,3,2,'#e8dbae');
+ if(facing!=='up'){box(x-3,y-1,2,2,'#314657');box(x+2,y-1,2,2,'#314657')}else box(x-4,y-2,8,4,'#815a48');ctx.globalAlpha=1;
+}
+function draw(){
+ ctx.imageSmoothingEnabled=false;box(0,0,canvas.width,canvas.height,'#152838');
+ for(let y=0;y<config.size;y++)for(let x=0;x<config.size;x++)if(grid[y][x]){const px=x*TILE,py=y*TILE;box(px,py,24,24,'#334d62');box(px+1,py+1,22,3,'#54728a');box(px+1,py+4,2,17,'#45647a');box(px+2,py+22,22,2,'#263e50');if((x+y)%3===0){box(px+11,py+5,1,16,'#2b4458');box(px+3,py+12,8,1,'#2b4458')}}else{box(x*TILE+1,y*TILE+1,22,22,'#182d3e');if((x*7+y*3)%6===0)box(x*TILE+5,y*TILE+18,2,2,'#254054')}
+ if(mode==='running'&&gameTime<hintUntil){for(const p of hintPath){box(p.x*TILE+10,p.y*TILE+10,4,4,'#84dbc282')}}
+ // Start mat, optional stars, and a bright portal remain distinct at small sizes.
+ box(start.x*TILE+3,start.y*TILE+4,18,16,'#3a4d55');box(start.x*TILE+5,start.y*TILE+7,14,2,'#72928f');
+ const ex=exit.x*TILE,ey=exit.y*TILE,pulse=Math.floor(gameTime/350)%2;box(ex+2,ey+1,20,22,'#73c5a5');box(ex+5,ey+4,14,19,pulse?'#24574b':'#2c6759');box(ex+10,ey+7,4,11,'#a6ebc6');box(ex+7,ey+10,10,5,'#a6ebc6');box(ex+2,ey+21,20,2,'#d0f2ce');
+ for(const s of stars)if(!s.taken)pixelStar(s.x*TILE+12,s.y*TILE+12,'#f0c565');
+ for(const m of monsters)drawMonster(m);drawPlayer();
+}
+function frame(now){
+ const dt=lastFrame?Math.min(now-lastFrame,70):0;lastFrame=now;
+ if(mode==='running'){
+  gameTime+=dt;const direction=[...held].at(-1);if(direction&&gameTime-lastPlayerStep>=PLAYER_INTERVAL)movePlayer(direction);moveMonsters();
+  const seconds=Math.floor(gameTime/1000);if(lastTimer!==seconds){lastTimer=seconds;$('#timer').textContent=seconds+'초'}
+ }
+ if(now-lastDraw>=30){draw();lastDraw=now}requestAnimationFrame(frame);
+}
+function pressDirection(direction){if(mode!=='running')return;held.delete(direction);held.add(direction);if(gameTime-lastPlayerStep>=PLAYER_INTERVAL)movePlayer(direction)}
+const keyDirection={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',W:'up',a:'left',A:'left',s:'down',S:'down',d:'right',D:'right'};
+document.addEventListener('keydown',e=>{
+ if(e.ctrlKey||e.metaKey||e.altKey||e.target instanceof HTMLSelectElement)return;
+ if(keyDirection[e.key]){e.preventDefault();if(!e.repeat)pressDirection(keyDirection[e.key])}
+ else if(e.code==='Space'){if(e.target instanceof HTMLButtonElement)return;e.preventDefault();if(!e.repeat){if(mode==='ready')startRunning();else togglePause()}}
+ else if(e.key==='Escape'&&mode==='running'){e.preventDefault();togglePause()}
+});
+document.addEventListener('keyup',e=>{if(keyDirection[e.key])held.delete(keyDirection[e.key])});
+for(const b of document.querySelectorAll('[data-direction]')){b.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='running')return;b.setPointerCapture(e.pointerId);pressDirection(b.dataset.direction)});for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>held.delete(b.dataset.direction))}
+canvas.addEventListener('pointerdown',e=>{if(mode!=='running')return;canvas.setPointerCapture(e.pointerId);touchStart={x:e.clientX,y:e.clientY};canvas.focus({preventScroll:true})});
+canvas.addEventListener('pointerup',e=>{if(!touchStart)return;const dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;touchStart=null;if(Math.hypot(dx,dy)<12)return;movePlayer(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up')});canvas.addEventListener('pointercancel',()=>{touchStart=null});
+$('#pauseButton').addEventListener('click',()=>togglePause());$('#hintButton').addEventListener('click',useHint);$('#stageSelect').addEventListener('change',e=>{const selected=Number(e.target.value);if(Number.isInteger(selected)&&selected>=1&&selected<=saved.unlocked)loadLevel(selected)});
+$('#soundButton').addEventListener('click',()=>{saved.muted=!saved.muted;persist();updateSavedUI();if(!saved.muted)tone('star')});
+window.addEventListener('blur',()=>{held.clear();touchStart=null;if(mode==='running')togglePause(true)});document.addEventListener('visibilitychange',()=>{held.clear();touchStart=null;if(document.hidden&&mode==='running')togglePause(true)});
+loadLevel(stage);draw();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
