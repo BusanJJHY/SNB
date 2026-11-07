@@ -1,0 +1,104 @@
+'use strict';
+const $=s=>document.querySelector(s),KEY='cloud-world-trip-v1',COUNTRY_MAP=new Map(COUNTRIES.map(c=>[c.id,c])),ITEM_MAP=new Map(ITEMS.map(i=>[i.id,i]));
+const MISSION_IDS=['three','ten','regions','style','treasure','twentyfive','world'];
+const fresh=()=>({coins:80,visited:{},treasures:[],owned:ITEMS.filter(i=>i.price===0).map(i=>i.id),equip:{outfit:'explorer',hat:'nohat',bag:'nobag'},hair:'bob',hairColor:'brown',skin:'peach',claimed:[],trips:{},active:null});
+let data=fresh(),view='map',region='all',query='',category='outfit',passportMode='stamps',lastTrip=null,audioCtx=null;
+function shuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function validateTrip(r){
+ if(!r||!Number.isInteger(r.step)||r.step<0||r.step>4||!Array.isArray(r.orders)||r.orders.length!==2||r.orders.some(o=>!Array.isArray(o)||o.length!==4||[...o].sort().join(',')!=='0,1,2,3'))return null;
+ if(!Array.isArray(r.answers)||r.answers.length!==2||r.answers.some(a=>!a||typeof a.solved!=='boolean'||!Array.isArray(a.wrong)||new Set(a.wrong).size!==a.wrong.length||a.wrong.some(n=>!Number.isInteger(n)||n<1||n>3)))return null;
+ if(r.step>=2&&!r.answers[0].solved||r.step>=4&&!r.answers[1].solved)return null;
+ return {step:r.step,orders:r.orders.map(o=>[...o]),answers:r.answers.map(a=>({solved:a.solved,wrong:[...a.wrong]}))};
+}
+try{
+ const s=JSON.parse(localStorage.getItem(KEY));
+ if(s&&Number.isSafeInteger(s.coins)&&s.coins>=0){
+  data.coins=s.coins;for(const c of COUNTRIES){const r=s.visited?.[c.id];if(r&&Number.isInteger(r.stars)&&r.stars>=1&&r.stars<=3)data.visited[c.id]={stars:r.stars,visits:Number.isSafeInteger(r.visits)&&r.visits>0?r.visits:1};const t=validateTrip(s.trips?.[c.id]);if(t)data.trips[c.id]=t}
+  data.treasures=COUNTRIES.filter(c=>Array.isArray(s.treasures)&&s.treasures.includes(c.id)).map(c=>c.id);data.owned=ITEMS.filter(i=>i.price===0||Array.isArray(s.owned)&&s.owned.includes(i.id)).map(i=>i.id);
+  for(const k of ['outfit','hat','bag'])if(data.owned.includes(s.equip?.[k])&&ITEM_MAP.get(s.equip[k]).category===k)data.equip[k]=s.equip[k];
+  if(Object.keys(HAIRS).includes(s.hair))data.hair=s.hair;if(Object.keys(HAIR_COLORS).includes(s.hairColor))data.hairColor=s.hairColor;if(Object.keys(SKINS).includes(s.skin))data.skin=s.skin;
+  data.claimed=MISSION_IDS.filter(id=>Array.isArray(s.claimed)&&s.claimed.includes(id));data.active=COUNTRY_MAP.has(s.active)&&data.trips[s.active]?s.active:Object.keys(data.trips)[0]||null;
+ }
+}catch{}
+const MISSIONS=[
+ {id:'three',icon:'🧳',name:'첫 세계 취재',goal:3,count:()=>Object.keys(data.visited).length,reward:100},
+ {id:'ten',icon:'🗞️',name:'꼬마 특파원',goal:10,count:()=>Object.keys(data.visited).length,reward:150},
+ {id:'regions',icon:'🌐',name:'여섯 지역 한 바퀴',goal:6,count:()=>new Set(Object.keys(data.visited).map(id=>COUNTRY_MAP.get(id).region)).size,reward:200},
+ {id:'style',icon:'🎀',name:'여행 패셔니스타',goal:3,count:()=>data.owned.filter(id=>ITEM_MAP.get(id).price>0).length,reward:75},
+ {id:'treasure',icon:'✨',name:'숨은 별 탐정',goal:10,count:()=>data.treasures.length,reward:80},
+ {id:'twentyfive',icon:'✈️',name:'지구 반 바퀴',goal:25,count:()=>Object.keys(data.visited).length,reward:300},
+ {id:'world',icon:'🏆',name:'50나라 세계탐험가',goal:50,count:()=>Object.keys(data.visited).length,reward:600}
+];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch{}}
+function look(){return {...data.equip,hair:data.hair,hairColor:data.hairColor,skin:data.skin}}
+function activeTrip(){return data.active?data.trips[data.active]:null}
+function rank(){const n=Object.keys(data.visited).length;return n===50?'세계탐험 마스터':n>=25?'세계 특파원':n>=10?'베테랑 여행자':n>=3?'꼬마 탐험가':'새싹 여행자'}
+function notice(text){$('#notice').textContent=text}
+function stopSpeech(){try{window.speechSynthesis?.cancel()}catch{}}
+function renderGlobal(){const n=Object.keys(data.visited).length;$('#stampCount').textContent=n+' / 50';$('#starCount').textContent=Object.values(data.visited).reduce((s,r)=>s+r.stars,0)+' / 150';$('#wallet').textContent='🪙 '+data.coins;$('#miniAvatar').innerHTML=avatarSVG(look())}
+function show(name,scroll=true){
+ stopSpeech();view=name;for(const id of ['map','tour','passport','closet','missions','result'])$('#'+id+'View').hidden=id!==name;
+ for(const id of ['map','passport','closet','missions'])$('#'+id+'Tab').setAttribute('aria-pressed',String(id===name||id==='map'&&['tour','result'].includes(name)));
+ renderGlobal();if(name==='map')renderMap();if(name==='tour')renderTour();if(name==='passport')renderPassport();if(name==='closet')renderCloset();if(name==='missions')renderMissions();
+ if(scroll){if(name==='tour')focusTour();else window.scrollTo({top:0,behavior:'auto'})}
+}
+function focusTour(){$('#tourView').scrollIntoView({behavior:'auto',block:'start'});window.scrollBy(0,-72)}
+function recommended(after=null){if(!data.visited.cn&&after!=='cn')return COUNTRY_MAP.get('cn');const c=after?COUNTRY_MAP.get(after):null;return COUNTRIES.find(n=>!data.visited[n.id]&&n.id!==after&&(!c||n.region===c.region))||COUNTRIES.find(n=>!data.visited[n.id]&&n.id!==after)||COUNTRY_MAP.get('cn')}
+function renderMap(){
+ $('#reporterPortrait').innerHTML=avatarSVG(look(),true);$('#travelerTitle').textContent=Object.keys(data.visited).length?rank()+'의 다음 목적지는?':'구름 기자와 첫 취재 출발!';$('#worldMap').innerHTML=worldMapSVG(data.visited);
+ const next=recommended();$('#recommend').textContent=next.flag+' '+next.name+' 취재하러 가기 →';$('#recommend').onclick=()=>startTrip(next.id);
+ const pending=data.active&&data.trips[data.active]?data.active:Object.keys(data.trips)[0];$('#resumeBox').hidden=!pending;if(pending){const c=COUNTRY_MAP.get(pending);$('#resumeText').textContent=c.flag+' '+c.name+' · '+(data.trips[pending].step+1)+'/5장면 취재 중';$('#resume').onclick=()=>startTrip(pending)}
+ $('#regionFilters').innerHTML=[{id:'all',name:'전체 50',icon:'🌏'},...REGIONS].map(r=>`<button data-region="${r.id}" aria-pressed="${region===r.id}">${r.icon} ${r.name}</button>`).join('');for(const b of document.querySelectorAll('[data-region]'))b.addEventListener('click',()=>{region=b.dataset.region;for(const x of document.querySelectorAll('[data-region]'))x.setAttribute('aria-pressed',String(x.dataset.region===region));renderCountryList()});renderCountryList();
+}
+function renderCountryList(){
+ const list=COUNTRIES.filter(c=>(region==='all'||c.region===region)&&(!query||c.name.includes(query)||c.alias?.includes(query)));$('#listCount').textContent=list.length+'개 나라 · 각 나라에서 두 번의 현장 퀴즈를 만나요.';
+ $('#countryList').innerHTML=list.length?list.map(c=>{const r=data.visited[c.id],pending=data.trips[c.id];return `<button class="country-card ${r?'visited':''}" data-country="${c.id}"><span class="trip-arrow">${r?'✓':'↗'}</span><span class="flag">${c.flag}</span><strong>${c.name}</strong><small>${c.site[0]}</small><em>${pending?'📝 취재 이어가기':r?'★'.repeat(r.stars)+'☆'.repeat(3-r.stars)+' · 다시 취재':'🎟️ 새 도장 받으러 가기'}</em></button>`}).join(''):'<p class="empty">찾는 나라가 없어요. 이름이나 여행 지역을 바꿔 보세요!</p>';
+ for(const b of document.querySelectorAll('[data-country]'))b.addEventListener('click',()=>startTrip(b.dataset.country));
+}
+function startTrip(id){if(!COUNTRY_MAP.has(id))return;if(!data.trips[id])data.trips[id]={step:0,orders:[shuffle([0,1,2,3]),shuffle([0,1,2,3])],answers:[{solved:false,wrong:[]},{solved:false,wrong:[]}]};data.active=id;save();show('tour');notice('숨은 별은 첫 장면에서 찾아요! 틀린 퀴즈도 다시 고르면 계속 여행할 수 있어요.')}
+function renderTour(){
+ const trip=activeTrip(),c=COUNTRY_MAP.get(data.active);if(!trip||!c){show('map');return}const step=trip.step,isQuiz=step===1||step===3;
+ $('#tourRegion').textContent=REGIONS.find(r=>r.id===c.region).name+' · 구름 기자의 현장 리포트';$('#tourTitle').textContent=c.flag+' '+c.name;$('#hello').textContent=c.hello;$('#sceneLabel').textContent=(step+1)+'/5장면 · '+['명소 취재','첫 번째 현장 퀴즈','문화·자연 취재','두 번째 현장 퀴즈','기념품 엽서'][step];$('#tourProgress').style.width=((step+1)/5*100)+'%';$('#comic').hidden=isQuiz;$('#quiz').hidden=!isQuiz;
+ const next=$('#tourNext');next.disabled=false;next.textContent=step===4?'🎟️ 여권에 도장 받고 취재 마치기':isQuiz?'다음 취재로 →':'현장 퀴즈 풀기 →';
+ if(isQuiz){renderQuiz(c,trip,step===1?0:1);return}
+ const title=step===0?c.site[0]:step===2?c.culture[0]:'오늘의 기념품: '+c.gift[0],text=step===0?c.site[2]:step===2?c.culture[2]:c.extra;
+ $('#sceneTitle').textContent=title;$('#reporterText').textContent=text;$('#playerText').textContent=step===0?`“${c.hello.split(' · ')[0]}” 인사도 배웠어! 취재 퀴즈로 한 번 기억해 볼래.`:step===2?'명소뿐 아니라 음식과 자연, 생활 이야기도 재미있어! 다음 퀴즈에 도전해 볼게.':`${c.gift[0]}을 기념품으로 챙기자! 기자님, 오늘의 여권 도장도 찍어 주세요!`;
+ $('#panelLabel').textContent=step===4?'특파원 여행 엽서':'구름 뉴스 · '+(step===0?'명소 현장':'문화·자연 현장');$('#comicArt').innerHTML=comicArt(c,look(),step);
+ const found=data.treasures.includes(c.id),hash=[...c.id].reduce((s,ch)=>s*31+ch.charCodeAt(0),0);$('#treasure').hidden=step!==0;$('#treasure').disabled=found;$('#treasure').style.left=(24+hash%51)+'%';$('#treasure').style.top=(14+hash*7%44)+'%';$('#treasure').textContent=found?'✓':'✦';$('#treasureStatus').textContent=step===0?(found?'✦ 숨은 별 찾음':'✦ 숨은 별 찾으면 +10코인'):step===4?'기념품 수집 준비!':'100문제 세계 상식';
+}
+function renderQuiz(c,trip,index){
+ const quiz=index===0?c.q1:c.q2,a=trip.answers[index];$('#quizQuestion').textContent=quiz[0];$('#quizNotebook').textContent=index===0?c.site[2]:c.culture[2];$('#answers').replaceChildren();
+ trip.orders[index].forEach((original,display)=>{const b=document.createElement('button');b.className='answer';b.dataset.choice=original;b.dataset.number=display+1;const n=document.createElement('span');n.textContent=display+1;const label=document.createElement('span');label.textContent=quiz[1][original];b.append(n,label);b.disabled=a.solved||a.wrong.includes(original);if(a.wrong.includes(original))b.classList.add('wrong');if(a.solved&&original===0)b.classList.add('right');b.addEventListener('click',()=>answer(original));$('#answers').append(b)});
+ $('#quizFeedback').hidden=!a.solved&&!a.wrong.length;$('#quizFeedback').className='quiz-feedback'+(a.solved?'':' retry');$('#quizFeedback').textContent=a.solved?`정답! ${a.wrong.length?'다시 생각해서 알아냈어. 멋져!':'첫 답에 성공! 여행 별 보너스도 챙겼어.'} 정답은 “${quiz[1][0]}”이야.`:`괜찮아, 취재 노트를 다시 읽어 보자! ${index===0?c.site[2]:c.culture[2]}`;
+ $('#tourNext').disabled=!a.solved;$('#tourNext').textContent=a.solved?(index===0?'문화·자연 취재로 →':'기념품 이야기로 →'):'정답을 찾으면 다음 취재로!';
+}
+function answer(choice){const trip=activeTrip();if(view!=='tour'||!trip||![1,3].includes(trip.step)||!Number.isInteger(choice)||choice<0||choice>3)return;const index=trip.step===1?0:1,a=trip.answers[index];if(a.solved||a.wrong.includes(choice))return;if(choice===0){a.solved=true;tone('win')}else{a.wrong.push(choice);tone('tap')}save();renderTour();$('#quizFeedback').scrollIntoView({behavior:'auto',block:'nearest'})}
+function advance(){const trip=activeTrip();if(view!=='tour'||!trip)return;if(trip.step===1&&!trip.answers[0].solved||trip.step===3&&!trip.answers[1].solved)return;stopSpeech();if(trip.step===4){finishCountry();return}trip.step++;save();renderTour();focusTour()}
+function findTreasure(){const trip=activeTrip(),id=data.active;if(view!=='tour'||!trip||trip.step!==0||data.treasures.includes(id))return;data.treasures.push(id);data.coins+=10;save();renderGlobal();renderTour();notice('✦ 숨은 별 발견! 여행 코인 +10! 이 나라의 별 선물은 한 번만 받을 수 있어요.');tone('win')}
+function finishCountry(){
+ const trip=activeTrip(),id=data.active,c=COUNTRY_MAP.get(id);if(!trip||trip.step!==4||!trip.answers.every(a=>a.solved))return;const first=!data.visited[id],firstAnswers=trip.answers.filter(a=>a.wrong.length===0).length,stars=1+firstAnswers,reward=first?50+firstAnswers*10:0,old=data.visited[id];data.coins+=reward;data.visited[id]={stars:Math.max(old?.stars||0,stars),visits:(old?.visits||0)+1};delete data.trips[id];data.active=null;lastTrip={id,first,stars,reward};save();renderResult();show('result');tone('win');notice(first?'여권 도장과 기념품을 받았어요! 미션 선물도 확인해 보세요.':'다시 취재했어요! 가장 좋은 별 기록은 여권에 남겨 두었어요.')
+}
+function renderResult(){const r=lastTrip,c=COUNTRY_MAP.get(r.id),n=Object.keys(data.visited).length;$('#resultFlag').textContent=c.flag;$('#resultTitle').textContent=n===50&&r.first?'🏆 50나라 세계탐험 완주!':c.name+' 취재 완료!';$('#resultStars').textContent='★'.repeat(r.stars)+'☆'.repeat(3-r.stars);$('#resultDescription').textContent=r.first?`여권 도장 ${n}/50 · 새 기념품 발견! 여행 코인 +${r.reward} (첫 방문 50 + 첫 답 보너스 ${r.reward-50})`:'도장과 기념품은 이미 모았어요. 다시 방문해도 코인은 중복 지급되지 않고, 더 좋은 별 기록은 저장돼요.';$('#resultGiftIcon').textContent=c.gift[1];$('#resultGiftName').textContent=c.gift[0];const next=recommended(c.id);$('#nextCountry').textContent=next.flag+' '+next.name+' 취재로 →';$('#nextCountry').onclick=()=>startTrip(next.id)}
+function renderPassport(){
+ const n=Object.keys(data.visited).length;$('#passportSummary').textContent=`도장 ${n}/50 · 기념품 ${n}/50 · 숨은 별 ${data.treasures.length}/50`;
+ $('#rankBadge').textContent=rank();$('#stampsButton').setAttribute('aria-pressed',String(passportMode==='stamps'));$('#giftsButton').setAttribute('aria-pressed',String(passportMode==='gifts'));
+ $('#passportGrid').innerHTML=COUNTRIES.map(c=>{const r=data.visited[c.id],gifts=passportMode==='gifts';return `<button class="stamp-card ${r?'earned':''}" data-memory="${c.id}"><span class="stamp-symbol">${r?(gifts?c.gift[1]:c.flag):'🔒'}</span><strong>${gifts&&r?c.gift[0]:c.name}</strong><p>${r?(gifts?c.name+'에서 모은 기념품':c.site[0]+' · '+r.visits+'번 취재'):'취재를 마치면 받을 수 있어요'}</p><em>${r?'★'.repeat(r.stars)+'☆'.repeat(3-r.stars):'탐험하러 가기 →'}</em></button>`}).join('');for(const b of document.querySelectorAll('[data-memory]'))b.addEventListener('click',()=>openMemory(b.dataset.memory));
+}
+function openMemory(id){const c=COUNTRY_MAP.get(id);if(!c)return;if(!data.visited[id]){startTrip(id);return}$('#postcardTitle').textContent=c.flag+' '+c.name+'의 취재 엽서';$('#postcardBody').innerHTML=`<div class="comic-picture">${comicArt(c,look(),4)}</div><h3>${escapeHTML(c.site[0])}</h3><p>${escapeHTML(c.site[2])}</p><h3>${escapeHTML(c.culture[0])}</h3><p>${escapeHTML(c.culture[2])}</p><p>${escapeHTML(c.extra)}</p><button id="memoryTravel" class="primary">다시 취재하러 가기 →</button>`;$('#postcard').showModal();$('#memoryTravel').addEventListener('click',()=>{$('#postcard').close();startTrip(id)})}
+function renderCloset(){
+ $('#largeAvatar').innerHTML=avatarSVG(look());$('#wearing').textContent=[data.equip.outfit,data.equip.hat,data.equip.bag].map(id=>ITEM_MAP.get(id).name).join(' · ');
+ $('#hairStyles').innerHTML=Object.entries(HAIRS).map(([id,name])=>`<button data-hair="${id}" aria-pressed="${data.hair===id}">${name}</button>`).join('');for(const b of document.querySelectorAll('[data-hair]'))b.addEventListener('click',()=>setAppearance('hair',b.dataset.hair));
+ $('#hairColors').innerHTML=Object.entries(HAIR_COLORS).map(([id,color])=>`<button data-haircolor="${id}" style="--color:${color}" aria-label="${{brown:'갈색',black:'검은색',gold:'금빛',purple:'보라색'}[id]} 머리" aria-pressed="${data.hairColor===id}"></button>`).join('');for(const b of document.querySelectorAll('[data-haircolor]'))b.addEventListener('click',()=>setAppearance('hairColor',b.dataset.haircolor));
+ $('#skinColors').innerHTML=Object.entries(SKINS).map(([id,color])=>`<button data-skin="${id}" style="--color:${color}" aria-label="${{peach:'밝은',tan:'중간',deep:'진한'}[id]} 피부 톤" aria-pressed="${data.skin===id}"></button>`).join('');for(const b of document.querySelectorAll('[data-skin]'))b.addEventListener('click',()=>setAppearance('skin',b.dataset.skin));
+ $('#shopCategories').innerHTML=[['outfit','👗 옷'],['hat','👒 모자'],['bag','🎒 소품']].map(([id,name])=>`<button data-category="${id}" aria-pressed="${category===id}">${name}</button>`).join('');for(const b of document.querySelectorAll('[data-category]'))b.addEventListener('click',()=>{category=b.dataset.category;renderCloset()});
+ $('#shop').innerHTML=ITEMS.filter(i=>i.category===category).map(i=>{const owned=data.owned.includes(i.id),equipped=data.equip[i.category]===i.id;return `<article class="shop-card ${owned?'owned':''}"><span>${i.icon}</span><h3>${i.name}</h3><p>${owned?'내 여행 옷장에 있어요. 무료로 바꿀 수 있어요.':'만화 속 내 캐릭터에게도 반영돼요.'}</p><button data-buy="${i.id}" ${equipped||!owned&&data.coins<i.price?'disabled':''}>${equipped?'✓ 착용 중':owned?'무료로 바꾸기':'🪙 '+i.price+' · 사서 착용'}</button></article>`}).join('');for(const b of document.querySelectorAll('[data-buy]'))b.addEventListener('click',()=>buy(b.dataset.buy));
+}
+function setAppearance(key,value){const options=key==='hair'?HAIRS:key==='hairColor'?HAIR_COLORS:key==='skin'?SKINS:null;if(!options||!Object.keys(options).includes(value))return;data[key]=value;save();renderGlobal();renderCloset();notice('여행 캐릭터를 바꿨어요! 다음 만화 장면에도 반영돼요.')}
+function buy(id){const item=ITEM_MAP.get(id);if(!item)return;const owned=data.owned.includes(id);if(!owned){if(data.coins<item.price){notice('여행 코인이 조금 부족해요. 새 나라 취재나 미션에 도전해 보세요!');return}data.coins-=item.price;data.owned.push(id)}data.equip[item.category]=id;save();renderGlobal();renderCloset();notice('🎀 '+item.name+' 착용 완료! 구매한 아이템은 언제든 무료로 다시 입을 수 있어요.');tone('tap')}
+function renderMissions(){$('#missionList').innerHTML=MISSIONS.map(m=>{const count=m.count(),claimed=data.claimed.includes(m.id),ready=count>=m.goal;return `<article class="mission-card"><h3>${m.icon} ${m.name}</h3><p>${Math.min(count,m.goal)}/${m.goal} 달성 · 선물 ${m.reward}코인</p><div class="mission-progress"><div style="width:${Math.min(100,count/m.goal*100)}%"></div></div><button data-claim="${m.id}" ${claimed||!ready?'disabled':''}>${claimed?'✓ 선물 받음':ready?'🎁 선물 받기':'아직 도전 중'}</button></article>`}).join('');for(const b of document.querySelectorAll('[data-claim]'))b.addEventListener('click',()=>claim(b.dataset.claim))}
+function claim(id){const m=MISSIONS.find(m=>m.id===id);if(!m||data.claimed.includes(id)||m.count()<m.goal)return;data.claimed.push(id);data.coins+=m.reward;save();renderGlobal();renderMissions();notice('🎁 '+m.name+' 달성! 여행 코인 +'+m.reward);tone('win')}
+function speak(){const c=COUNTRY_MAP.get(data.active),trip=activeTrip();if(!c||!trip)return;if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window)){notice('이 기기에서는 읽어주기를 지원하지 않아요. 말풍선으로 기자 이야기를 읽을 수 있어요.');return}try{stopSpeech();const text=trip.step===0?c.site[2]:trip.step===2?c.culture[2]:c.extra,u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=.94;const voice=speechSynthesis.getVoices().find(v=>v.lang.startsWith('ko'));if(voice)u.voice=voice;u.onerror=e=>{if(!['canceled','interrupted'].includes(e.error))notice('읽어주기는 기기의 한국어 음성 지원에 따라 달라요. 말풍선에서도 같은 이야기를 읽어요.')};speechSynthesis.speak(u);notice('🎤 구름 기자가 이야기를 읽어요. 한국어 목소리는 기기 지원에 따라 달라요.')}catch{notice('말풍선에서 같은 기자 이야기를 읽을 수 있어요.')}}
+function tone(kind){try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});const notes=kind==='win'?[659,784,1047]:[523];notes.forEach((hz,i)=>{const at=audioCtx.currentTime+i*.08,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=hz;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.045,at+.01);g.gain.exponentialRampToValueAtTime(.0001,at+.12);o.connect(g);g.connect(audioCtx.destination);o.start(at);o.stop(at+.13)})}catch{}}
+for(const name of ['map','passport','closet','missions'])$('#'+name+'Tab').addEventListener('click',()=>show(name));$('#avatarShortcut').addEventListener('click',()=>show('closet'));$('#search').addEventListener('input',e=>{query=e.target.value.trim();renderCountryList()});$('#tourBack').addEventListener('click',()=>show('map'));$('#tourNext').addEventListener('click',advance);$('#treasure').addEventListener('click',findTreasure);$('#speak').addEventListener('click',speak);$('#stampsButton').addEventListener('click',()=>{passportMode='stamps';renderPassport()});$('#giftsButton').addEventListener('click',()=>{passportMode='gifts';renderPassport()});$('#resultMap').addEventListener('click',()=>show('map'));$('#resultCloset').addEventListener('click',()=>show('closet'));$('#closePostcard').addEventListener('click',()=>$('#postcard').close());$('#postcard').addEventListener('close',stopSpeech);
+document.addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||view!=='tour'||$('#postcard').open)return;if(/^[1-4]$/.test(e.key)){const b=document.querySelector('[data-number="'+e.key+'"]');if(b&&!b.disabled){e.preventDefault();b.click()}}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech()});
+show('map',false);
