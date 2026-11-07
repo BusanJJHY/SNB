@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#edf4e8">
+<title>쿵짝! 육상 3종 · 리듬 스포츠</title>
+<link rel="stylesheet" href="style.css">
+<script src="game.js" defer></script>
+</head>
+<body>
+<main>
+<header><div><p class="eyebrow">ONE BUTTON · THREE SPORTS</p><h1>🏅 쿵짝! 육상 3종</h1><p class="subtitle">박자에 맞춰 뛰고, 파워와 각도로 새 기록에 도전!</p></div><button id="sound" class="icon-button" aria-label="소리 끄기" aria-pressed="false">🔊</button></header>
+<section class="setup" aria-label="경기 선택">
+ <div class="sports"><button data-sport="triple" class="selected"><span>👟</span><strong>삼단뛰기</strong><small>홉 · 스텝 · 점프!</small><em id="best-triple">최고 기록 없음</em></button><button data-sport="javelin"><span>🎯</span><strong>창던지기</strong><small>파워 + 던지는 각도</small><em id="best-javelin">최고 기록 없음</em></button><button data-sport="hurdles"><span>🏃</span><strong>리듬 허들</strong><small>여섯 박자에 맞춰 점프</small><em id="best-hurdles">최고 기록 없음</em></button></div>
+ <div class="preferences"><div id="difficulties" class="difficulties" role="group" aria-label="난이도"><button data-difficulty="easy" class="selected">🐣 연습</button><button data-difficulty="normal">⭐ 기본</button><button data-difficulty="hard">🔥 챔피언</button></div><div class="jerseys" role="group" aria-label="유니폼 색"><button data-jersey="blue" aria-label="파랑 유니폼" aria-pressed="true" style="--jersey:#5e9cd0"></button><button data-jersey="coral" aria-label="코랄 유니폼" aria-pressed="false" style="--jersey:#db8975"></button><button data-jersey="mint" aria-label="민트 유니폼" aria-pressed="false" style="--jersey:#6bad99"></button></div></div>
+ <div class="event-intro"><div><h2 id="eventName"></h2><p id="eventDescription"></p></div><button id="tournament">🏆 3종 대회</button></div>
+</section>
+<section id="arena" class="arena" aria-label="경기장">
+ <div class="hud"><span id="eventLabel"></span><strong id="progressLabel">준비됐나요?</strong><span id="recordLabel">메달 0 / 9</span></div>
+ <div id="stadium" class="stadium"><canvas id="game" width="960" height="540" tabindex="0" aria-label="2D 육상 경기장. 화면 아래 큰 버튼이나 스페이스바로 조작합니다."></canvas><div id="overlay" class="overlay" hidden><div><strong id="overlayNumber"></strong><p id="overlayText"></p></div></div></div>
+ <div class="cue-row"><strong id="instruction"></strong><span id="gaugeValue"></span></div>
+ <div id="meter" class="meter" role="progressbar" aria-label="타이밍 안내" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="sweet" class="sweet"></div><div id="fill" class="fill"></div><div id="needle" class="needle"></div><span id="meterText">가운데 초록 구간이 타이밍!</span></div>
+ <p id="feedback" class="feedback" role="status">큰 버튼 하나로 도전해요!</p>
+ <div id="controls" class="controls"><button id="action" class="action">▶ 도전 시작!</button><button id="pause" class="icon-button" disabled aria-label="경기 멈춤">Ⅱ</button><button id="home" class="icon-button" aria-label="경기 끝내고 종목 선택" hidden>⌂</button></div>
+ <p class="key-help">화면 버튼 / 스페이스바 · 꾹 누르지 말고 박자마다 한 번씩!</p>
+</section>
+<section id="result" class="result" hidden><div id="resultIcon" class="result-icon"></div><p class="eyebrow" id="resultEyebrow">PERSONAL RECORD</p><h2 id="resultTitle"></h2><p id="resultRecord" class="result-record"></p><p id="resultDescription"></p><div id="resultDetails" class="result-details"></div><div class="result-actions"><button id="resultNext" class="primary"></button><button id="retry">다시 도전</button><button id="resultHome">종목 선택</button></div></section>
+<footer>최고 기록·메달·난이도·유니폼 자동 저장 · 직접 만든 2D 그림과 박자 소리<br><a href="../">게임 목록</a> · <a href="../drums/">꼬마 드럼</a> · <a href="../rhythm/">리듬게임</a></footer>
+</main>
+</body>
+</html>
